@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>cabanas.garcia.ismael.escondite</groupId>
+    <artifactId>escondite-app</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.19.1</version>
+                <configuration>
+                    <argLine>${surefireArgLine}</argLine>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.6</source>
+                    <target>1.6</target>
+                </configuration>
+            </plugin>
+            <!-- Jacoco : code coverage library for Java -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco.version}</version>
+                <executions>
+                    <execution>
+                        <id>jacoco-initialize</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>jacoco-site</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                        <configuration>
+                            <dataFile>${jacoco.ut.execution.data.file}</dataFile>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Javadoc:  -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.10.3</version>
+            </plugin>
+
+        </plugins>
+    </build>
+
+    <packaging>jar</packaging>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <java.version>1.8</java.version>
+        <nexus.url>https://nexus.ci.gsnet.corp</nexus.url>
+        <serenity-devstack-dependencies.version>1.3.0</serenity-devstack-dependencies.version>
+        <jacoco.ut.execution.data.file>${project.build.directory}/coverage-reports/jacoco-ut.exec</jacoco.ut.execution.data.file>
+        <jacoco.version>0.7.1.201405082137</jacoco.version>
+    </properties>
+
+    <!-- Repositorios de librerías -->
+    <repositories>
+        <repository>
+            <id>serenity-repo</id>
+            <name>serenity-repo</name>
+            <url>https://nexus.ci.gsnet.corp/nexus/content/groups/public/</url>
+        </repository>
+        <repository>
+            <id>spring-milestones</id>
+            <name>Spring Milestones</name>
+            <url>https://repo.spring.io/milestone</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>jcenter-bintray</id>
+            <name>jcenter</name>
+            <url>https://nexus.ci.gsnet.corp/nexus/content/repositories/jcenter-bintray/</url>
+        </repository>
+    </repositories>
+
+    <developers>
+        <developer>
+            <name>Ismael Cabañas</name>
+            <id>xi317311</id>
+            <email>ismael.cabanas@extern.isban.com</email>
+        </developer>        
+    </developers>
+
+    <!-- Repositorios de plugins -->
+    <pluginRepositories>
+        <pluginRepository>
+            <id>nexus-central</id>
+            <url>${nexus.url}/nexus/content/repositories/central</url>
+            <releases><enabled>true</enabled></releases>
+            <snapshots><enabled>true</enabled></snapshots>
+        </pluginRepository>
+        <pluginRepository>
+            <id>maven-central</id>
+            <url>https://repo1.maven.org/maven2</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+        </pluginRepository>
+    </pluginRepositories>
+
+    <!-- <scm>
+        GIT
+        <connection>git@gitlab.ci.gsnet.corp:serenity-processes-bpm/serenity-service-processes.git</connection>
+        <developerConnection>git@gitlab.ci.gsnet.corp:serenity-processes-bpm/serenity-service-processes.git</developerConnection>
+        <url>https://gitlab.ci.gsnet.corp/serenity-processes-bpm/serenity-service-processes.git</url>		
+    </scm>   -->
+
+    <!-- Esta parte es configuración para subir Snapshots y Releases a Nexus -->
+    <distributionManagement>
+        <repository>
+            <id>releases</id>
+            <name>Repositorio de releases</name>
+            <url>${nexus.url}/nexus/content/repositories/releases</url>
+        </repository>
+
+        <snapshotRepository>
+            <id>snapshots</id>
+            <name>Repositorio de snapshots</name>
+            <url>${nexus.url}/nexus/content/repositories/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
+
+</project>
