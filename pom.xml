@@ -10,11 +10,26 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
+                <groupId>org.codehaus.gmavenplus</groupId>
+                <artifactId>gmavenplus-plugin</artifactId>
+                <version>1.4</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>compile</goal>
+                            <goal>testCompile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.19.1</version>
+                <version>${surefire.version}</version>
                 <configuration>
-                    <argLine>${surefireArgLine}</argLine>
+                    <includes>
+                        <include>**/*Spec.java</include> <!-- Yes, .java extension -->
+                        <include>**/*Test.java</include> <!-- Just in case of having also "normal" JUnit tests -->
+                    </includes>
                 </configuration>
             </plugin>
 
@@ -70,6 +85,8 @@
         <serenity-devstack-dependencies.version>1.3.0</serenity-devstack-dependencies.version>
         <jacoco.ut.execution.data.file>${project.build.directory}/coverage-reports/jacoco-ut.exec</jacoco.ut.execution.data.file>
         <jacoco.version>0.7.1.201405082137</jacoco.version>
+        <slf4j-api.version>1.7.21</slf4j-api.version>
+        <surefire.version>2.19.1</surefire.version>
     </properties>
 
     <!-- Repositorios de librerías -->
@@ -126,19 +143,43 @@
         <url>https://gitlab.ci.gsnet.corp/serenity-processes-bpm/serenity-service-processes.git</url>		
     </scm>   -->
 
-    <!-- Esta parte es configuración para subir Snapshots y Releases a Nexus -->
-    <distributionManagement>
-        <repository>
-            <id>releases</id>
-            <name>Repositorio de releases</name>
-            <url>${nexus.url}/nexus/content/repositories/releases</url>
-        </repository>
+    <dependencies>
+        <!-- Mandatory dependencies for using Spock -->
+        <dependency>
+            <groupId>org.spockframework</groupId>
+            <artifactId>spock-core</artifactId>
+            <version>1.0-groovy-2.4</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest-all</artifactId>
+            <version>1.3</version>
+            <scope>test</scope>
+        </dependency>
 
-        <snapshotRepository>
-            <id>snapshots</id>
-            <name>Repositorio de snapshots</name>
-            <url>${nexus.url}/nexus/content/repositories/snapshots</url>
-        </snapshotRepository>
-    </distributionManagement>
+        <dependency>
+            <groupId>org.codehaus.groovy</groupId>
+            <artifactId>groovy-all</artifactId>
+            <version>2.4.1</version>
+        </dependency>
+
+        <!-- SLF4J -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j-api.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.1.7</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-core</artifactId>
+            <version>1.1.7</version>
+        </dependency>
+    </dependencies>
 
 </project>
