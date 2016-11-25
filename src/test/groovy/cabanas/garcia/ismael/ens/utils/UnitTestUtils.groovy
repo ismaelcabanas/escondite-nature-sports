@@ -2,6 +2,8 @@ package cabanas.garcia.ismael.ens.utils
 
 import cabanas.garcia.ismael.ens.model.Event
 
+import java.time.Instant
+
 /**
  * Created by XI317311 on 24/11/2016.
  */
@@ -23,5 +25,18 @@ final class UnitTestUtils {
         }
 
         return event
+    }
+
+    public static Event getDummyEvent() {
+        Event
+            .builder()
+            .name("Test Event")
+            .description("Event for testing")
+            .date(now())
+            .build()
+    }
+
+    public static Date now() {
+        return Date.from(Instant.now())
     }
 }

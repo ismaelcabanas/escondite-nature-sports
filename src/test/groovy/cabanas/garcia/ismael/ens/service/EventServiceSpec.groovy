@@ -2,12 +2,9 @@ package cabanas.garcia.ismael.ens.service
 
 import cabanas.garcia.ismael.ens.utils.UnitTestUtils
 
-import java.time.Instant
-
 import static org.hamcrest.Matchers.*
 import static spock.util.matcher.HamcrestSupport.*
 
-import cabanas.garcia.ismael.ens.model.Event
 import cabanas.garcia.ismael.ens.repository.EventRepository
 import spock.lang.Specification
 
@@ -22,7 +19,7 @@ class EventServiceSpec extends Specification{
         given:
         EventRepository eventRepository = Mock(EventRepository)
         EventService eventService = new DefaultEventService(eventRepository)
-        def anEvent = getDummyEvent()
+        def anEvent = UnitTestUtils.getDummyEvent()
 
         when:
         eventService.create(anEvent)
@@ -51,21 +48,10 @@ class EventServiceSpec extends Specification{
         that actualEvent.id, is(notNullValue())
 
         where:
-           event                                                            |   expected
-           [name: "EventA", description: "EventA description", date: now()] |   [name: "EventA", description: "EventA description", date: now(), id: 1]
-           [name: "EventB", description: "EventB description", date: now()] |   [name: "EventB", description: "EventB description", date: now(), id: 2]
+           event                                                                          |   expected
+           [name: "EventA", description: "EventA description", date: UnitTestUtils.now()] |   [name: "EventA", description: "EventA description", date: UnitTestUtils.now(), id: 1]
+           [name: "EventB", description: "EventB description", date: UnitTestUtils.now()] |   [name: "EventB", description: "EventB description", date: UnitTestUtils.now(), id: 2]
     }
 
-    private Date now() {
-        return Date.from(Instant.now())
-    }
 
-    private Event getDummyEvent() {
-        Event
-            .builder()
-            .name("Test Event")
-            .description("Event for testing")
-            .date(now())
-            .build()
-    }
 }
