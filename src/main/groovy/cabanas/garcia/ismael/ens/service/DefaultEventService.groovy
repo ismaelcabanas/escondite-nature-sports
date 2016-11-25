@@ -15,7 +15,7 @@ class DefaultEventService implements EventService{
 
     @Override
     Event create(Event event) {
-        def newEvent = eventRepository.save(event)
+        Event newEvent = eventRepository.save(event)
         return newEvent
     }
 }
