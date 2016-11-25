@@ -51,12 +51,12 @@ class EventServiceSpec extends Specification{
         that actualEvent.id, is(notNullValue())
 
         where:
-           event                                                                  |   expected
-           [name: "EventA", description: "EventA description", date: dummyDate()] |   [name: "EventA", description: "EventA description", date: dummyDate(), id: 1]
-           [name: "EventB", description: "EventB description", date: dummyDate()] |   [name: "EventB", description: "EventB description", date: dummyDate(), id: 2]
+           event                                                            |   expected
+           [name: "EventA", description: "EventA description", date: now()] |   [name: "EventA", description: "EventA description", date: now(), id: 1]
+           [name: "EventB", description: "EventB description", date: now()] |   [name: "EventB", description: "EventB description", date: now(), id: 2]
     }
 
-    private Date dummyDate() {
+    private Date now() {
         return Date.from(Instant.now())
     }
 
@@ -65,7 +65,7 @@ class EventServiceSpec extends Specification{
             .builder()
             .name("Test Event")
             .description("Event for testing")
-            .date(dummyDate())
+            .date(now())
             .build()
     }
 }
