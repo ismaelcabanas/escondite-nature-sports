@@ -42,9 +42,11 @@ class EventServiceSpec extends Specification{
         def actualEvent = eventService.create(anEvent)
 
         then:
-        that actualEvent, is(notNullValue())
-        that actualEvent.name, is(equalTo(expected.name))
-        that actualEvent.description, is(equalTo(expected.description))
+        expect actualEvent, is(notNullValue())
+        expect actualEvent.name, is(equalTo(expected.name))
+        expect actualEvent.description, is(equalTo(expected.description))
+
+        expect:
         that actualEvent.date, is(notNullValue())
         that actualEvent.id, is(notNullValue())
 
