@@ -52,7 +52,7 @@ class EventControllerSpec extends Specification{
         expect expectedEvent.date, sameYear(eventData.date)
     }
 
-    def "should return 204 status when create a new event"(){
+    def "should return 204 status code when create a new event"(){
         given:
         EventService eventService = Mock(EventService)
         EventController eventController = new EventController(eventService)
@@ -70,8 +70,36 @@ class EventControllerSpec extends Specification{
                 .andReturn().response
 
         then:
-        response.status == HttpStatus.CREATED
-        response.contentType == MediaType.APPLICATION_JSON_UTF8_VALUE
+        response.status == HttpStatus.CREATED.value()
+        //response.contentType == MediaType.APPLICATION_JSON_UTF8_VALUE
+    }
+
+    def "should return 400 status code when create a event but name is not sended"(){
+        given:
+        EventService eventService = Mock(EventService)
+        EventController eventController = new EventController(eventService)
+        MockMvc mockMvc = standaloneSetup(eventController).build()
+        EventRequestBody eventData = getAnEventRequestBodyWithoutName()
+
+        when:
+        def response = mockMvc.perform(
+                post("/events")
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .accept(MediaType.APPLICATION_JSON_UTF8)
+                        .content(toJson(eventData))
+        )
+                .andDo(log())
+                .andReturn().response
+
+        then:
+        response.status == HttpStatus.BAD_REQUEST.value()
+    }
+
+    EventRequestBody getAnEventRequestBodyWithoutName() {
+        EventRequestBody.builder()
+                .description(TEST_EVENT_DESCRIPTION)
+                .date(NOW)
+                .build()
     }
 
     private EventRequestBody getAnEventRequestBody() {
