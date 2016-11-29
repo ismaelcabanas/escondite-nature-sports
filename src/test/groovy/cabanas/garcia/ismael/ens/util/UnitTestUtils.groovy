@@ -1,4 +1,4 @@
-package cabanas.garcia.ismael.ens.utils
+package cabanas.garcia.ismael.ens.util
 
 import cabanas.garcia.ismael.ens.model.Event
 
@@ -38,5 +38,9 @@ final class UnitTestUtils {
 
     public static Date now() {
         return Date.from(Instant.now())
+    }
+
+    public static String nowToString(){
+        now().format("yyyyMMdd")
     }
 }

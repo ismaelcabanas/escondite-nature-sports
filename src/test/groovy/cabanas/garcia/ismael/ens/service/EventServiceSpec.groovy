@@ -1,6 +1,6 @@
 package cabanas.garcia.ismael.ens.service
 
-import cabanas.garcia.ismael.ens.utils.UnitTestUtils
+import cabanas.garcia.ismael.ens.util.UnitTestUtils
 
 import static org.hamcrest.Matchers.*
 import static spock.util.matcher.HamcrestSupport.*
