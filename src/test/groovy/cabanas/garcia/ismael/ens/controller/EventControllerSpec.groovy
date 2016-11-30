@@ -34,19 +34,14 @@ class EventControllerSpec extends Specification{
     def "should use event service for creating a new event"(){
         Event expectedEvent
 
-        given: "event controller with event service like collaborator"
+        given: "the event controller and event data"
         EventService eventService = Mock(EventService)
         EventController eventController = new EventController(eventService)
-        MockMvc mockMvc = standaloneSetup(eventController).build()
+        GlobalExceptionHandler controllerAdvice = new GlobalExceptionHandler()
         EventRequestBody eventData = getAnEventRequestBody()
 
         when: "send a REST post request for creating an event"
-        def response = mockMvc.perform(
-                post("/events")
-                    .contentType(MediaType.APPLICATION_JSON_UTF8)
-                    .accept(MediaType.APPLICATION_JSON_UTF8)
-                    .content(toJson(eventData))
-                ).andDo(log())
+        def response = sendPost(eventController, controllerAdvice, "/events", eventData)
 
         then: "the create method of event service is invoked"
         1 * eventService.create(_) >> {arguments -> expectedEvent = arguments[0]}
@@ -61,20 +56,13 @@ class EventControllerSpec extends Specification{
 
     def "should return 204 status code when create a new event"(){
 
-        given: "event controller with event service like collaborator"
-        EventService eventService = Mock(EventService)
-        EventController eventController = new EventController(eventService)
-        MockMvc mockMvc = standaloneSetup(eventController).build()
+        given: "the event controller and event data"
+        EventController eventController = getEventController()
+        GlobalExceptionHandler controllerAdvice = new GlobalExceptionHandler()
+        EventRequestBody eventData = getAnEventRequestBody()
 
         when: "send a REST post request for creating an event"
-        def response = mockMvc.perform(
-                post("/events")
-                        .contentType(MediaType.APPLICATION_JSON_UTF8)
-                        .accept(MediaType.APPLICATION_JSON_UTF8)
-                        .content(toJson(getAnEventRequestBody()))
-                )
-                .andDo(log())
-                .andReturn().response
+        def response = sendPost(eventController, controllerAdvice, "/events", eventData)
 
         then: "the response status code should be " + HttpStatus.CREATED.value()
         response.status == HttpStatus.CREATED.value()
@@ -82,46 +70,23 @@ class EventControllerSpec extends Specification{
     }
 
     def "should return 400 status code when create a event with validation errors"(){
-        given:
-        EventService eventService = Mock(EventService)
+        given: "the event controller"
+        EventController eventController = getEventController()
 
-        and:
+        and: "global exception handler prepared for managing validation errors"
         ErrorMessageService errorMessageService = Mock(ErrorMessageService)
-        errorMessageService.getMessage(ErrorCode.MISSING_REQUIRED_REQUEST_BODY_PARAMETER) >> ErrorPropertiesUtil.getMessage(ErrorCode.MISSING_REQUIRED_REQUEST_BODY_PARAMETER)
-        errorMessageService.getDescription(ErrorCode.MISSING_REQUIRED_REQUEST_BODY_PARAMETER, "name") >> ErrorPropertiesUtil.getDescription(ErrorCode.MISSING_REQUIRED_REQUEST_BODY_PARAMETER)
-        errorMessageService.getDescription(ErrorCode.MISSING_REQUIRED_REQUEST_BODY_PARAMETER, "date") >> ErrorPropertiesUtil.getDescription(ErrorCode.MISSING_REQUIRED_REQUEST_BODY_PARAMETER)
+        errorMessageService.getMessage(_) >> ErrorPropertiesUtil.getMessage(ErrorCode.MISSING_REQUIRED_REQUEST_BODY_PARAMETER)
+        errorMessageService.getDescription(_, _) >> ErrorPropertiesUtil.getDescription(ErrorCode.MISSING_REQUIRED_REQUEST_BODY_PARAMETER)
+        GlobalExceptionHandler controllerAdvice = new GlobalExceptionHandler(errorMessageService)
 
-        and:
-        EventController eventController = new EventController(eventService)
+        when: "send a REST request for creating an event for events with validation errors"
+        def response = sendPost(eventController, controllerAdvice, "/events", givenEventRequestBody)
 
-        and:
-        MockMvc mockMvc = standaloneSetup(eventController)
-                .setControllerAdvice(new GlobalExceptionHandler(errorMessageService))
-                .build()
-
-        when:
-        def response = mockMvc.perform(
-                post("/events")
-                        .contentType(MediaType.APPLICATION_JSON_UTF8)
-                        .accept(MediaType.APPLICATION_JSON_UTF8)
-                        .content(toJson(givenEventRequestBody))
-        )
-                .andDo(log())
-                .andReturn().response
-
-        then:
+        then: "status code is a BAD_REQUEST"
         response.status == HttpStatus.BAD_REQUEST.value()
 
-        and:
-        def content = new JsonSlurper().parseText(response.contentAsString)
-        content.errors.size == errorsExpected.size()
-        content.errors.eachWithIndex { error, i ->
-            assert error.code == errorsExpected[i]['code']
-            assert error.message == errorsExpected[i]['message']
-            assert error.description == errorsExpected[i]['description']
-            assert error.level == errorsExpected[i]['level']
-            assert error.moreInfo == errorsExpected[i]['moreInfo']
-        }
+        and: "the errors are the expected"
+        matchesErrorsExpected(response, errorsExpected)
 
         where:
         givenEventRequestBody                        | errorsExpected
@@ -132,39 +97,73 @@ class EventControllerSpec extends Specification{
 
     }
 
-    private EventRequestBody getAnEventRequestBodyWithoutRequiredParams() {
+    def getEventController(){
+        EventService eventService = Mock(EventService)
+        EventController eventController = new EventController(eventService)
+        return eventController
+    }
+
+    def sendPost(controller, controllerAdvice, path, content){
+        MockMvc mockMvc = standaloneSetup(controller)
+                .setControllerAdvice(controllerAdvice)
+                .build()
+        def response = mockMvc.perform(
+                post(path)
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .accept(MediaType.APPLICATION_JSON_UTF8)
+                        .content(toJson(content))
+                 )
+                .andDo(log())
+                .andReturn().response
+
+        return response
+    }
+
+    def matchesErrorsExpected(response, errorsExpected) {
+        def content = new JsonSlurper().parseText(response.contentAsString)
+        content.errors.size == errorsExpected.size()
+        content.errors.eachWithIndex { error, i ->
+            assert error.code == errorsExpected[i]['code']
+            assert error.message == errorsExpected[i]['message']
+            assert error.description == errorsExpected[i]['description']
+            assert error.level == errorsExpected[i]['level']
+            assert error.moreInfo == errorsExpected[i]['moreInfo']
+        }
+    }
+
+    def getAnEventRequestBodyWithoutRequiredParams() {
         EventRequestBody.builder()
                 .description(TEST_EVENT_DESCRIPTION)
                 .build()
     }
 
-    private EventRequestBody getAnEventRequestBodyWithoutEventDate() {
+    def getAnEventRequestBodyWithoutEventDate() {
         EventRequestBody.builder()
                 .name(TEST_EVENT_NAME)
                 .description(TEST_EVENT_DESCRIPTION)
                 .build()
     }
 
-    private String getDescriptionForMissingRequiredParameter() {
+    def getDescriptionForMissingRequiredParameter() {
         ErrorPropertiesUtil.getDescription(ErrorCode.MISSING_REQUIRED_REQUEST_BODY_PARAMETER)
     }
 
-    private String getMessageForMissingRequiredParameter() {
+    def getMessageForMissingRequiredParameter() {
         ErrorPropertiesUtil.getMessage(ErrorCode.MISSING_REQUIRED_REQUEST_BODY_PARAMETER)
     }
 
-    private String getErrorCodeForMissingRequiredParameter() {
+    def getErrorCodeForMissingRequiredParameter() {
         ErrorCode.MISSING_REQUIRED_REQUEST_BODY_PARAMETER
     }
 
-    private EventRequestBody getAnEventRequestBodyWithoutEventName() {
+    def getAnEventRequestBodyWithoutEventName() {
         EventRequestBody.builder()
                 .description(TEST_EVENT_DESCRIPTION)
                 .date(NOW)
                 .build()
     }
 
-    private EventRequestBody getAnEventRequestBody() {
+    def getAnEventRequestBody() {
         EventRequestBody.builder()
                 .name(TEST_EVENT_NAME)
                 .description(TEST_EVENT_DESCRIPTION)
@@ -172,7 +171,7 @@ class EventControllerSpec extends Specification{
                 .build()
     }
 
-    private String toJson(Object object) {
+    def toJson(Object object) {
         return JsonOutput.toJson(object)
     }
 }
