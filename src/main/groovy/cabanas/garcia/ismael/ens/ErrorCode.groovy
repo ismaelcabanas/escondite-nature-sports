@@ -5,4 +5,5 @@ package cabanas.garcia.ismael.ens
  */
 final class ErrorCode {
     final static String MISSING_REQUIRED_REQUEST_BODY_PARAMETER = "MissingRequiredRequestBodyParameter"
+    final static String INTERNAL_ERROR = "InternalError"
 }

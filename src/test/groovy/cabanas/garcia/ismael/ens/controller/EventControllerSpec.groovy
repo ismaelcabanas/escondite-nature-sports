@@ -6,7 +6,7 @@ import cabanas.garcia.ismael.ens.controller.beans.EventRequestBody
 import cabanas.garcia.ismael.ens.model.Event
 import cabanas.garcia.ismael.ens.service.ErrorMessageService
 import cabanas.garcia.ismael.ens.service.EventService
-import cabanas.garcia.ismael.ens.util.ErrorPropertiesUtil
+import cabanas.garcia.ismael.ens.util.ErrorPropertiesTestUtils
 import cabanas.garcia.ismael.ens.util.UnitTestUtils
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
@@ -75,8 +75,9 @@ class EventControllerSpec extends Specification{
 
         and: "global exception handler prepared for managing validation errors"
         ErrorMessageService errorMessageService = Mock(ErrorMessageService)
-        errorMessageService.getMessage(_) >> ErrorPropertiesUtil.getMessage(ErrorCode.MISSING_REQUIRED_REQUEST_BODY_PARAMETER)
-        errorMessageService.getDescription(_, _) >> ErrorPropertiesUtil.getDescription(ErrorCode.MISSING_REQUIRED_REQUEST_BODY_PARAMETER)
+        errorMessageService.getMessage(_) >> ErrorPropertiesTestUtils.getMessage(ErrorCode.MISSING_REQUIRED_REQUEST_BODY_PARAMETER)
+        errorMessageService.getDescription(_, "name") >> ErrorPropertiesTestUtils.getDescription(ErrorCode.MISSING_REQUIRED_REQUEST_BODY_PARAMETER, "name")
+        errorMessageService.getDescription(_, "date") >> ErrorPropertiesTestUtils.getDescription(ErrorCode.MISSING_REQUIRED_REQUEST_BODY_PARAMETER, "date")
         GlobalExceptionHandler controllerAdvice = new GlobalExceptionHandler(errorMessageService)
 
         when: "send a REST request for creating an event for events with validation errors"
@@ -90,10 +91,10 @@ class EventControllerSpec extends Specification{
 
         where:
         givenEventRequestBody                        | errorsExpected
-        getAnEventRequestBodyWithoutEventName()      | [[code: getErrorCodeForMissingRequiredParameter(), message: getMessageForMissingRequiredParameter(), description: getDescriptionForMissingRequiredParameter(), level: LevelError.INFO.getLevelName(), moreInfo: ""]]
-        getAnEventRequestBodyWithoutEventDate()      | [[code: getErrorCodeForMissingRequiredParameter(), message: getMessageForMissingRequiredParameter(), description: getDescriptionForMissingRequiredParameter(), level: LevelError.INFO.getLevelName(), moreInfo: ""]]
-        getAnEventRequestBodyWithoutRequiredParams() | [[code: getErrorCodeForMissingRequiredParameter(), message: getMessageForMissingRequiredParameter(), description: getDescriptionForMissingRequiredParameter(), level: LevelError.INFO.getLevelName(), moreInfo: ""],
-                                                        [code: getErrorCodeForMissingRequiredParameter(), message: getMessageForMissingRequiredParameter(), description: getDescriptionForMissingRequiredParameter(), level: LevelError.INFO.getLevelName(), moreInfo: ""]]
+        getAnEventRequestBodyWithoutEventName()      | [[code: getErrorCodeForMissingRequiredParameter(), message: getMessageForMissingRequiredParameter(), description: getDescriptionForMissingRequiredParameter("name"), level: LevelError.INFO.getLevelName(), moreInfo: ""]]
+        getAnEventRequestBodyWithoutEventDate()      | [[code: getErrorCodeForMissingRequiredParameter(), message: getMessageForMissingRequiredParameter(), description: getDescriptionForMissingRequiredParameter("date"), level: LevelError.INFO.getLevelName(), moreInfo: ""]]
+        getAnEventRequestBodyWithoutRequiredParams() | [[code: getErrorCodeForMissingRequiredParameter(), message: getMessageForMissingRequiredParameter(), description: getDescriptionForMissingRequiredParameter("name"), level: LevelError.INFO.getLevelName(), moreInfo: ""],
+                                                        [code: getErrorCodeForMissingRequiredParameter(), message: getMessageForMissingRequiredParameter(), description: getDescriptionForMissingRequiredParameter("date"), level: LevelError.INFO.getLevelName(), moreInfo: ""]]
 
     }
 
@@ -144,12 +145,12 @@ class EventControllerSpec extends Specification{
                 .build()
     }
 
-    def getDescriptionForMissingRequiredParameter() {
-        ErrorPropertiesUtil.getDescription(ErrorCode.MISSING_REQUIRED_REQUEST_BODY_PARAMETER)
+    def getDescriptionForMissingRequiredParameter(param) {
+        ErrorPropertiesTestUtils.getDescription(ErrorCode.MISSING_REQUIRED_REQUEST_BODY_PARAMETER, param)
     }
 
     def getMessageForMissingRequiredParameter() {
-        ErrorPropertiesUtil.getMessage(ErrorCode.MISSING_REQUIRED_REQUEST_BODY_PARAMETER)
+        ErrorPropertiesTestUtils.getMessage(ErrorCode.MISSING_REQUIRED_REQUEST_BODY_PARAMETER)
     }
 
     def getErrorCodeForMissingRequiredParameter() {
