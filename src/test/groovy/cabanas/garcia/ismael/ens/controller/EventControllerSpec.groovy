@@ -3,6 +3,7 @@ package cabanas.garcia.ismael.ens.controller
 import cabanas.garcia.ismael.ens.ErrorCode
 import cabanas.garcia.ismael.ens.LevelError
 import cabanas.garcia.ismael.ens.controller.beans.EventRequestBody
+import cabanas.garcia.ismael.ens.controller.beans.response.ErrorResponse
 import cabanas.garcia.ismael.ens.model.Event
 import cabanas.garcia.ismael.ens.service.ErrorMessageService
 import cabanas.garcia.ismael.ens.service.EventService
@@ -19,6 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static spock.util.matcher.HamcrestSupport.*
 import static org.hamcrest.Matchers.*
 import static org.exparity.hamcrest.date.DateMatchers.*
+import static org.hamcrest.collection.IsArrayContainingInAnyOrder.*
 
 import spock.lang.Specification
 
@@ -91,10 +93,10 @@ class EventControllerSpec extends Specification{
 
         where:
         givenEventRequestBody                        | errorsExpected
-        getAnEventRequestBodyWithoutEventName()      | [[code: getErrorCodeForMissingRequiredParameter(), message: getMessageForMissingRequiredParameter(), description: getDescriptionForMissingRequiredParameter("name"), level: LevelError.INFO.getLevelName(), moreInfo: ""]]
-        getAnEventRequestBodyWithoutEventDate()      | [[code: getErrorCodeForMissingRequiredParameter(), message: getMessageForMissingRequiredParameter(), description: getDescriptionForMissingRequiredParameter("date"), level: LevelError.INFO.getLevelName(), moreInfo: ""]]
-        getAnEventRequestBodyWithoutRequiredParams() | [[code: getErrorCodeForMissingRequiredParameter(), message: getMessageForMissingRequiredParameter(), description: getDescriptionForMissingRequiredParameter("name"), level: LevelError.INFO.getLevelName(), moreInfo: ""],
-                                                        [code: getErrorCodeForMissingRequiredParameter(), message: getMessageForMissingRequiredParameter(), description: getDescriptionForMissingRequiredParameter("date"), level: LevelError.INFO.getLevelName(), moreInfo: ""]]
+        getAnEventRequestBodyWithoutEventName()      | [new ErrorResponse(code: getErrorCodeForMissingRequiredParameter(), message: getMessageForMissingRequiredParameter(), description: getDescriptionForMissingRequiredParameter("name"), level: LevelError.INFO.getLevelName(), moreInfo: "")]
+        getAnEventRequestBodyWithoutEventDate()      | [new ErrorResponse(code: getErrorCodeForMissingRequiredParameter(), message: getMessageForMissingRequiredParameter(), description: getDescriptionForMissingRequiredParameter("date"), level: LevelError.INFO.getLevelName(), moreInfo: "")]
+        getAnEventRequestBodyWithoutRequiredParams() | [new ErrorResponse(code: getErrorCodeForMissingRequiredParameter(), message: getMessageForMissingRequiredParameter(), description: getDescriptionForMissingRequiredParameter("name"), level: LevelError.INFO.getLevelName(), moreInfo: ""),
+                                                        new ErrorResponse(code: getErrorCodeForMissingRequiredParameter(), message: getMessageForMissingRequiredParameter(), description: getDescriptionForMissingRequiredParameter("date"), level: LevelError.INFO.getLevelName(), moreInfo: "")]
 
     }
 
@@ -123,12 +125,11 @@ class EventControllerSpec extends Specification{
     def matchesErrorsExpected(response, errorsExpected) {
         def content = new JsonSlurper().parseText(response.contentAsString)
         content.errors.size == errorsExpected.size()
-        content.errors.eachWithIndex { error, i ->
-            assert error.code == errorsExpected[i]['code']
-            assert error.message == errorsExpected[i]['message']
-            assert error.description == errorsExpected[i]['description']
-            assert error.level == errorsExpected[i]['level']
-            assert error.moreInfo == errorsExpected[i]['moreInfo']
+        content.errors.each { error ->
+            def errorResponse = new ErrorResponse(code: error.code, description: error.description, message: error.message
+                    ,level: error.level, moreInfo: error.moreInfo)
+
+            assert errorsExpected.contains(errorResponse)
         }
     }
 
